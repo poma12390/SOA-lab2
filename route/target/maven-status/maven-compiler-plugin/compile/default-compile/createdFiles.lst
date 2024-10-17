@@ -1,5 +1,6 @@
 de\gre90r\jaxwsserver\model\Coordinates.class
 de\gre90r\jaxwsserver\model\Route.class
+de\gre90r\jaxwsserver\configuration\TrustAllCertificatesManager.class
 de\gre90r\jaxwsserver\controllers\RoutesResource$1.class
 de\gre90r\jaxwsserver\controllers\RoutesResource$ValidationExceptionMapper.class
 de\gre90r\jaxwsserver\ApplicationConfig.class

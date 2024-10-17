@@ -1,8 +1,9 @@
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\service\RouteService.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\ApplicationConfig.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\controllers\RoutesResource.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\exception\RouteNotFoundException.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\controllers\HelloWorldResource.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\model\Location.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\model\Route.java
-C:\Users\pomat\Documents\SOA-lab2\JAX-WS-Server\src\main\java\de\gre90r\jaxwsserver\model\Coordinates.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\exception\RouteNotFoundException.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\model\Route.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\controllers\HelloWorldResource.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\model\Location.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\ApplicationConfig.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\service\RouteService.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\controllers\RoutesResource.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\model\Coordinates.java
+C:\Users\pomat\Documents\SOA-lab2\route\src\main\java\de\gre90r\jaxwsserver\configuration\TrustAllCertificatesManager.java

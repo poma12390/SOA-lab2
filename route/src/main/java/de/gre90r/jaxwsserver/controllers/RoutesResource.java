@@ -1,31 +1,45 @@
 package de.gre90r.jaxwsserver.controllers;
 
 import de.gre90r.jaxwsserver.exception.RouteNotFoundException;
-import de.gre90r.jaxwsserver.model.Location;
 import de.gre90r.jaxwsserver.model.Route;
 import de.gre90r.jaxwsserver.service.RouteService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.criteria.*;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.Path;
-;
-import jakarta.ws.rs.core.*;
-import jakarta.validation.Valid;
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.GenericEntity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Map;
-
+import java.util.List;
 
 @Path("/routes")
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,6 +66,9 @@ public class RoutesResource {
         }
     }
 
+    @Context
+    private HttpServletRequest request;
+
     @GET
     public Response getAllRoutes(
             @QueryParam("page") @DefaultValue("1") int page,
@@ -64,43 +81,45 @@ public class RoutesResource {
             @QueryParam("minDistance") Double minDistance,
             @QueryParam("maxDistance") Double maxDistance) {
 
+        checkCert();
+
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Route> cq = cb.createQuery(Route.class);
         Root<Route> root = cq.from(Route.class);
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // Filter by name
+        // Фильтр по имени
         if (nameFilter != null && !nameFilter.isEmpty()) {
             predicates.add(cb.like(root.get("name"), "%" + nameFilter + "%"));
         }
 
-        // Filter by fromLocationId
+        // Фильтр по fromLocationId
         if (fromLocationId != null) {
             predicates.add(cb.equal(root.get("from").get("id"), fromLocationId));
         }
 
-        // Filter by toLocationId
+        // Фильтр по toLocationId
         if (toLocationId != null) {
             predicates.add(cb.equal(root.get("to").get("id"), toLocationId));
         }
 
-        // Filter by minimum distance
+        // Фильтр по минимальному расстоянию
         if (minDistance != null) {
             predicates.add(cb.greaterThanOrEqualTo(root.get("distance"), minDistance));
         }
 
-        // Filter by maximum distance
+        // Фильтр по максимальному расстоянию
         if (maxDistance != null) {
             predicates.add(cb.lessThanOrEqualTo(root.get("distance"), maxDistance));
         }
 
-        // Apply filters
+        // Применение фильтров
         if (!predicates.isEmpty()) {
             cq.where(cb.and(predicates.toArray(new Predicate[0])));
         }
 
-        // Apply sorting
+        // Применение сортировки
         if ("desc".equalsIgnoreCase(order)) {
             cq.orderBy(cb.desc(root.get(sort)));
         } else {
@@ -109,7 +128,7 @@ public class RoutesResource {
 
         TypedQuery<Route> query = em.createQuery(cq);
 
-        // Pagination
+        // Пагинация
         query.setFirstResult((page - 1) * size);
         query.setMaxResults(size);
 
@@ -119,11 +138,10 @@ public class RoutesResource {
         return Response.ok(entity).build();
     }
 
-
     /**
      * Добавление нового маршрута.
      *
-     * @param route маршрут для добавления
+     * @param route   маршрут для добавления
      * @param uriInfo информация о URI
      * @return ответ с созданным маршрутом
      */
@@ -131,6 +149,7 @@ public class RoutesResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addRoute(@Valid Route route, @Context UriInfo uriInfo) {
+        checkCert();
         Route createdRoute = routeService.addRoute(route);
 
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
@@ -142,6 +161,7 @@ public class RoutesResource {
     @Path("/{id}")
     @GET
     public Response getRouteById(@PathParam("id") long id) {
+        checkCert();
         Route route = em.find(Route.class, id);
         if (route == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
@@ -152,7 +172,7 @@ public class RoutesResource {
     /**
      * Обновление существующего маршрута.
      *
-     * @param id          идентификатор маршрута для обновления
+     * @param id           идентификатор маршрута для обновления
      * @param updatedRoute обновленные данные маршрута
      * @return ответ с обновленным маршрутом или ошибкой
      */
@@ -161,6 +181,7 @@ public class RoutesResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateRoute(@PathParam("id") long id, @Valid Route updatedRoute) {
+        checkCert();
         try {
             Route route = routeService.updateRoute(id, updatedRoute);
             return Response.ok(route).build();
@@ -174,6 +195,7 @@ public class RoutesResource {
     @DELETE
     @Transactional
     public Response deleteRoute(@PathParam("id") long id) {
+        checkCert();
         Route route = em.find(Route.class, id);
         if (route == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("Route not found").build();
@@ -186,6 +208,7 @@ public class RoutesResource {
     @Path("/from/max")
     @GET
     public Response getRouteWithMaxFrom() {
+        checkCert();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Route> cq = cb.createQuery(Route.class);
         Root<Route> root = cq.from(Route.class);
@@ -219,6 +242,7 @@ public class RoutesResource {
     @Path("/distance/lower/{value}/count")
     @GET
     public Response getCountOfRoutesWithDistanceLowerThan(@PathParam("value") double value) {
+        checkCert();
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> cq = cb.createQuery(Long.class);
         Root<Route> root = cq.from(Route.class);
@@ -229,5 +253,13 @@ public class RoutesResource {
         Long count = em.createQuery(cq).getSingleResult();
 
         return Response.ok("{\"count\":" + count + "}").build();
+    }
+
+    private void checkCert(){
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs != null && certs.length > 0) {
+            X509Certificate clientCert = certs[0];
+            // Проверка надежности
+        }
     }
 }
